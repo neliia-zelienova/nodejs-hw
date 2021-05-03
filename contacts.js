@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
+import { v4 as uuidv4 } from "uuid";
 
 const contactsPath = path.resolve("./db", "./contacts.json");
 
@@ -23,17 +24,19 @@ async function getContactById(contactId) {
 
 async function removeContact(contactId) {
   const data = await listContacts();
-  const newData = data.filter((item) => item.id !== Number(contactId));
-  try {
-    await fs.writeFile(contactsPath, JSON.stringify(newData));
-    return newData;
-  } catch (err) {
-    console.log(err);
-  }
+  if (data.find((item) => item.id === Number(contactId))) {
+    const newData = data.filter((item) => item.id !== Number(contactId));
+    try {
+      await fs.writeFile(contactsPath, JSON.stringify(newData));
+      return newData;
+    } catch (err) {
+      console.log(err);
+    }
+  } else return data;
 }
 async function addContact(name, email, phone) {
   const data = await listContacts();
-  const id = data[data.length - 1].id + 1;
+  const id = uuidv4();
   data.push({ id, name, email, phone });
   try {
     await fs.writeFile(contactsPath, JSON.stringify(data));
